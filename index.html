@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MAI Focus — AI Operator for Smarter Control Rooms</title>
+<meta name="description" content="MAI Focus adds an AI operator to your existing control room: it watches every camera, filters the noise and surfaces only what matters.">
+<link rel="icon" href="assets/robot.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05090d; --bg2:#0a1218; --panel:#0e1a22; --line:#17303a;
+  --ink:#eaf7f5; --muted:#8fb0ad;
+  --teal:#40e0d0; --teal-d:#1fb5a6; --violet:#a78bfa; --red:#ff4d5e; --mint:#d8f3ee;
+  --r:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk','Heebo',system-ui,sans-serif;line-height:1.6;overflow-x:hidden}
+html[lang=he] body{font-family:'Heebo','Space Grotesk',sans-serif}
+a{color:inherit;text-decoration:none}
+.wrap{width:min(1180px,100% - 40px);margin-inline:auto}
+section{position:relative}
+
+/* nav */
+nav{position:fixed;inset:0 0 auto 0;z-index:50;backdrop-filter:blur(14px);background:rgba(5,9,13,.6);border-bottom:1px solid rgba(64,224,208,.1)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.04em}
+.brand img{width:34px;height:34px}
+.nav-links{display:flex;gap:26px;font-size:.92rem;color:var(--muted)}
+.nav-links a:hover{color:var(--teal)}
+.nav-actions{display:flex;gap:10px;align-items:center}
+.lang{background:none;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.85rem}
+.lang:hover{border-color:var(--teal)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:999px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:.25s;font:inherit;font-weight:600}
+.btn.primary{background:var(--teal);color:#032320;box-shadow:0 0 0 0 rgba(64,224,208,.5)}
+.btn.primary:hover{box-shadow:0 0 34px 2px rgba(64,224,208,.45);transform:translateY(-2px)}
+.btn.ghost{border-color:var(--line);color:var(--ink);background:rgba(255,255,255,.03)}
+.btn.ghost:hover{border-color:var(--teal);color:var(--teal)}
+
+/* hero */
+.hero{min-height:100vh;display:grid;place-items:center;text-align:center;overflow:hidden;padding:120px 0 80px}
+.hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(5,9,13,.1),var(--bg) 78%),linear-gradient(to bottom,transparent 60%,var(--bg));z-index:1}
+.hero .wrap{position:relative;z-index:2}
+.pill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:rgba(14,26,34,.7);padding:6px 16px;border-radius:999px;font-size:.82rem;color:var(--teal);margin-bottom:26px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 10px var(--teal);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.3}}
+h1{font-size:clamp(2.4rem,6.4vw,5.2rem);line-height:1.05;font-weight:700;letter-spacing:-.02em}
+html[lang=he] h1{font-weight:800;letter-spacing:0}
+h1 em{font-style:normal;background:linear-gradient(100deg,var(--teal),#8ff5ea 50%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{max-width:640px;margin:22px auto 34px;color:var(--muted);font-size:clamp(1.02rem,1.6vw,1.25rem)}
+.cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.hero-robot{width:120px;margin:0 auto 22px;animation:bob 4s ease-in-out infinite;filter:drop-shadow(0 0 40px rgba(64,224,208,.55))}
+@keyframes bob{50%{transform:translateY(-12px)}}
+.scroll-hint{position:absolute;bottom:26px;left:50%;translate:-50% 0;z-index:2;color:var(--muted);font-size:.8rem;letter-spacing:.2em}
+
+/* generic */
+.sec{padding:110px 0}
+.eyebrow{color:var(--teal);font-size:.8rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:14px}
+h2{font-size:clamp(1.9rem,4vw,3.2rem);line-height:1.12;font-weight:700;letter-spacing:-.01em;max-width:820px}
+.sub{color:var(--muted);max-width:640px;margin-top:16px;font-size:1.08rem}
+
+/* story */
+.story{display:grid;gap:90px;margin-top:70px}
+.scene{display:grid;grid-template-columns:1.15fr 1fr;gap:56px;align-items:center}
+.scene:nth-child(even){direction:rtl}
+.scene:nth-child(even)>*{direction:ltr}
+html[lang=he] .scene:nth-child(even)>*{direction:rtl}
+.frame{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -20px rgba(0,0,0,.8),0 0 60px -20px rgba(64,224,208,.25);aspect-ratio:16/9;background:#000}
+.frame video{width:100%;height:100%;object-fit:cover;display:block}
+.frame::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(64,224,208,.08);pointer-events:none}
+.frame.red{box-shadow:0 30px 80px -20px rgba(0,0,0,.8),0 0 70px -15px rgba(255,77,94,.35)}
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;padding:4px 12px;border-radius:999px;border:1px solid;margin-bottom:16px}
+.chip.t{color:var(--teal);border-color:rgba(64,224,208,.4)}
+.chip.v{color:var(--violet);border-color:rgba(167,139,250,.4)}
+.chip.r{color:var(--red);border-color:rgba(255,77,94,.4)}
+.scene h3{font-size:clamp(1.5rem,2.6vw,2.2rem);line-height:1.2;margin-bottom:14px}
+.scene p{color:var(--muted);font-size:1.05rem}
+.num{font-size:.85rem;color:var(--muted);margin-bottom:6px;letter-spacing:.15em}
+
+/* stats strip */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:60px}
+.stat{background:var(--panel);padding:30px 24px;text-align:center}
+.stat b{display:block;font-size:2.4rem;color:var(--teal);font-weight:700}
+.stat span{color:var(--muted);font-size:.9rem}
+
+/* capabilities */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
+.card{background:linear-gradient(160deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:30px;transition:.3s;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,0%),rgba(64,224,208,.13),transparent 55%);opacity:0;transition:.3s}
+.card:hover{border-color:rgba(64,224,208,.5);transform:translateY(-4px)}
+.card:hover::before{opacity:1}
+.ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:rgba(64,224,208,.1);border:1px solid rgba(64,224,208,.3);margin-bottom:18px;font-size:1.3rem}
+.card h4{font-size:1.15rem;margin-bottom:8px}
+.card p{color:var(--muted);font-size:.96rem}
+
+/* use cases */
+.uc{background:var(--bg2);border-block:1px solid var(--line)}
+.ucgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:50px}
+.uccard{display:flex;gap:20px;padding:28px;border-radius:var(--r);border:1px solid var(--line);background:var(--bg)}
+.uccard .k{font-size:2.2rem;line-height:1}
+.uccard h4{margin-bottom:6px}
+.uccard p{color:var(--muted);font-size:.95rem}
+
+/* cta */
+.cta{text-align:center;overflow:hidden}
+.cta::before{content:"";position:absolute;left:50%;top:50%;width:700px;height:700px;translate:-50% -50%;background:radial-gradient(circle,rgba(64,224,208,.2),transparent 65%);pointer-events:none}
+.cta .wrap{position:relative}
+.cta img{width:90px;margin-bottom:22px;filter:drop-shadow(0 0 30px rgba(64,224,208,.6));animation:bob 4s ease-in-out infinite}
+.cta h2{margin-inline:auto}
+.cta .cta-row{margin-top:34px}
+footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted);font-size:.9rem}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer a:hover{color:var(--teal)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(34px);transition:opacity .9s,transform .9s}
+.rv.in{opacity:1;transform:none}
+
+@media(max-width:900px){
+  .nav-links{display:none}
+  .scene,.scene:nth-child(even){grid-template-columns:1fr;direction:inherit;gap:26px}
+  .scene:nth-child(even)>*{direction:inherit}
+  .grid{grid-template-columns:1fr}
+  .ucgrid{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .sec{padding:76px 0}
+}
+@media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}.hero-robot,.cta img,.dot{animation:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#top" class="brand"><img src="assets/robot.png" alt=""><span>MAI&nbsp;FOCUS</span></a>
+    <div class="nav-links">
+      <a href="#how" data-i18n="nav_how">How it works</a>
+      <a href="#features" data-i18n="nav_feat">Capabilities</a>
+      <a href="#usecases" data-i18n="nav_uc">Use cases</a>
+      <a href="#contact" data-i18n="nav_contact">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <button class="lang" id="lang" aria-label="Language">עברית</button>
+      <a class="btn primary" href="#contact" data-i18n="cta_demo">Request Demo</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <video autoplay muted loop playsinline poster="assets/hero-robot.jpg"><source src="assets/hero-robot.mp4" type="video/mp4"></video>
+  <div class="wrap">
+    <div class="pill"><span class="dot"></span><span data-i18n="pill">AI operator · online 24/7</span></div>
+    <h1 data-i18n-html="h1">See what matters,<br><em>when it matters.</em></h1>
+    <p class="lead" data-i18n="lead">MAI Focus adds an AI operator to your existing control room. It watches every camera and alert, filters the noise, and brings you only what needs your attention. No new hardware.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="#contact" data-i18n="cta_demo">Request Demo</a>
+      <a class="btn ghost" href="https://www.maifocus.com" target="_blank" rel="noopener" data-i18n="cta_app">See the App</a>
+    </div>
+  </div>
+  <div class="scroll-hint">SCROLL</div>
+</header>
+
+<section class="sec" id="how">
+  <div class="wrap">
+    <div class="eyebrow rv" data-i18n="how_eye">How it works</div>
+    <h2 class="rv" data-i18n="how_h">From a flood of alerts to a single clear picture</h2>
+    <p class="sub rv" data-i18n="how_sub">A night in the control room, with MAI beside the operator.</p>
+
+    <div class="story">
+      <article class="scene rv">
+        <div class="frame red"><video muted loop playsinline preload="metadata" poster="assets/scene-alert.jpg" data-lazy="assets/scene-alert.mp4"></video></div>
+        <div>
+          <div class="num">01</div>
+          <span class="chip r" data-i18n="s1_chip">● Alert</span>
+          <h3 data-i18n="s1_h">An alert hits the screen. MAI reacts instantly.</h3>
+          <p data-i18n="s1_p">The moment something happens, MAI notices, turns to it and starts working. You don't have to hunt for the event among dozens of feeds.</p>
+        </div>
+      </article>
+
+      <article class="scene rv">
+        <div class="frame"><video muted loop playsinline preload="metadata" poster="assets/scene-filter.jpg" data-lazy="assets/scene-filter.mp4"></video></div>
+        <div>
+          <div class="num">02</div>
+          <span class="chip v" data-i18n="s2_chip">● Analysing</span>
+          <h3 data-i18n="s2_h">It checks every camera and filters the noise.</h3>
+          <p data-i18n="s2_p">MAI moves from monitor to monitor, verifies each alert, and fades out the false ones. Only the events that are real stay highlighted.</p>
+        </div>
+      </article>
+
+      <article class="scene rv">
+        <div class="frame"><video muted loop playsinline preload="metadata" poster="assets/scene-workstation.jpg" data-lazy="assets/scene-workstation.mp4"></video></div>
+        <div>
+          <div class="num">03</div>
+          <span class="chip t" data-i18n="s3_chip">● Acting</span>
+          <h3 data-i18n="s3_h">It works inside the software you already use.</h3>
+          <p data-i18n="s3_p">MAI opens the camera management window, selects the right camera, takes a screenshot and reports to the operator, exactly as a trained team member would.</p>
+        </div>
+      </article>
+
+      <article class="scene rv">
+        <div class="frame"><video muted loop playsinline preload="metadata" poster="assets/scene-dashboard.jpg" data-lazy="assets/scene-dashboard.mp4"></video></div>
+        <div>
+          <div class="num">04</div>
+          <span class="chip t" data-i18n="s4_chip">● Insight</span>
+          <h3 data-i18n="s4_h">Then it explains what it found.</h3>
+          <p data-i18n="s4_p">Patterns, peaks and anomalies are summarised on a live dashboard, so tomorrow's shift starts smarter than today's.</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="stats rv">
+      <div class="stat"><b>24/7</b><span data-i18n="st1">Always watching</span></div>
+      <div class="stat"><b>Any</b><span data-i18n="st2">camera vendor</span></div>
+      <div class="stat"><b>0</b><span data-i18n="st3">new hardware</span></div>
+      <div class="stat"><b>1</b><span data-i18n="st4">unified view</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="features">
+  <div class="wrap">
+    <div class="eyebrow rv" data-i18n="f_eye">Core capabilities</div>
+    <h2 class="rv" data-i18n="f_h">Everything the operator needs, in one assistant</h2>
+    <div class="grid">
+      <div class="card rv"><div class="ico">📹</div><h4 data-i18n="f1_h">Camera Integration</h4><p data-i18n="f1_p">Connects to cameras from any vendor and manages all streams in one place.</p></div>
+      <div class="card rv"><div class="ico">🎯</div><h4 data-i18n="f2_h">Advanced Anomaly Detection</h4><p data-i18n="f2_p">Set detection criteria per camera and schedule analysis for different scenarios.</p></div>
+      <div class="card rv"><div class="ico">🔔</div><h4 data-i18n="f3_h">Instant Notifications</h4><p data-i18n="f3_p">Alerts by SMS, email or third-party apps, the second something matters.</p></div>
+      <div class="card rv"><div class="ico">💬</div><h4 data-i18n="f4_h">Intuitive Interface</h4><p data-i18n="f4_p">A clean dashboard with notifications and a chatbot you can simply ask.</p></div>
+      <div class="card rv"><div class="ico">📊</div><h4 data-i18n="f5_h">Real-Time Data Analysis</h4><p data-i18n="f5_p">Saves and analyses recorded data live and after the event.</p></div>
+      <div class="card rv"><div class="ico">🤖</div><h4 data-i18n="f6_h">An Operator on Your Screen</h4><p data-i18n="f6_p">A small robot that sits above your windows, listens to alerts and carries out the follow-up actions you taught it.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec uc" id="usecases">
+  <div class="wrap">
+    <div class="eyebrow rv" data-i18n="u_eye">Use cases</div>
+    <h2 class="rv" data-i18n="u_h">Built for places where attention is expensive</h2>
+    <div class="ucgrid">
+      <div class="uccard rv"><div class="k">🛡️</div><div><h4 data-i18n="u1_h">Enhanced Security Monitoring</h4><p data-i18n="u1_p">Detect weapons, masked individuals, vehicle types and groups.</p></div></div>
+      <div class="uccard rv"><div class="k">🦺</div><div><h4 data-i18n="u2_h">Comprehensive Safety Management</h4><p data-i18n="u2_p">Fire detection, helmet compliance and restricted-area alerts.</p></div></div>
+      <div class="uccard rv"><div class="k">🏪</div><div><h4 data-i18n="u3_h">Effective Business Management</h4><p data-i18n="u3_p">Store headcounts, restaurant entry statistics, inventory tracking and staff activity.</p></div></div>
+      <div class="uccard rv"><div class="k">📈</div><div><h4 data-i18n="u4_h">In-Depth Analytics</h4><p data-i18n="u4_p">Foot traffic, machine usage and the most popular areas of your store.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec cta" id="contact">
+  <div class="wrap">
+    <img src="assets/robot.png" alt="">
+    <h2 class="rv" data-i18n="c_h">Ready to give your control room an AI operator?</h2>
+    <p class="sub rv" style="margin-inline:auto" data-i18n="c_p">Tell us about your setup and we'll show MAI Focus working on it.</p>
+    <div class="cta-row rv">
+      <a class="btn primary" href="https://wa.me/972522554334" target="_blank" rel="noopener" data-i18n="cta_demo">Request Demo</a>
+      <a class="btn ghost" href="https://www.maifocus.com" target="_blank" rel="noopener" data-i18n="cta_app">See the App</a>
+      <a class="btn ghost" href="tel:+972522554334" dir="ltr">+972 52 255 4334</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="yr"></span> MAI Focus</span>
+    <span><a href="https://www.maifocus.com" target="_blank" rel="noopener">MAI Focus App</a></span>
+  </div>
+</footer>
+
+<script>
+const T={
+en:{nav_how:"How it works",nav_feat:"Capabilities",nav_uc:"Use cases",nav_contact:"Contact",cta_demo:"Request Demo",cta_app:"See the App",
+pill:"AI operator · online 24/7",h1:"See what matters,<br><em>when it matters.</em>",
+lead:"MAI Focus adds an AI operator to your existing control room. It watches every camera and alert, filters the noise, and brings you only what needs your attention. No new hardware.",
+how_eye:"How it works",how_h:"From a flood of alerts to a single clear picture",how_sub:"A night in the control room, with MAI beside the operator.",
+s1_chip:"● Alert",s1_h:"An alert hits the screen. MAI reacts instantly.",s1_p:"The moment something happens, MAI notices, turns to it and starts working. You don't have to hunt for the event among dozens of feeds.",
+s2_chip:"● Analysing",s2_h:"It checks every camera and filters the noise.",s2_p:"MAI moves from monitor to monitor, verifies each alert, and fades out the false ones. Only the events that are real stay highlighted.",
+s3_chip:"● Acting",s3_h:"It works inside the software you already use.",s3_p:"MAI opens the camera management window, selects the right camera, takes a screenshot and reports to the operator, exactly as a trained team member would.",
+s4_chip:"● Insight",s4_h:"Then it explains what it found.",s4_p:"Patterns, peaks and anomalies are summarised on a live dashboard, so tomorrow's shift starts smarter than today's.",
+st1:"Always watching",st2:"camera vendor",st3:"new hardware",st4:"unified view",
+f_eye:"Core capabilities",f_h:"Everything the operator needs, in one assistant",
+f1_h:"Camera Integration",f1_p:"Connects to cameras from any vendor and manages all streams in one place.",
+f2_h:"Advanced Anomaly Detection",f2_p:"Set detection criteria per camera and schedule analysis for different scenarios.",
+f3_h:"Instant Notifications",f3_p:"Alerts by SMS, email or third-party apps, the second something matters.",
+f4_h:"Intuitive Interface",f4_p:"A clean dashboard with notifications and a chatbot you can simply ask.",
+f5_h:"Real-Time Data Analysis",f5_p:"Saves and analyses recorded data live and after the event.",
+f6_h:"An Operator on Your Screen",f6_p:"A small robot that sits above your windows, listens to alerts and carries out the follow-up actions you taught it.",
+u_eye:"Use cases",u_h:"Built for places where attention is expensive",
+u1_h:"Enhanced Security Monitoring",u1_p:"Detect weapons, masked individuals, vehicle types and groups.",
+u2_h:"Comprehensive Safety Management",u2_p:"Fire detection, helmet compliance and restricted-area alerts.",
+u3_h:"Effective Business Management",u3_p:"Store headcounts, restaurant entry statistics, inventory tracking and staff activity.",
+u4_h:"In-Depth Analytics",u4_p:"Foot traffic, machine usage and the most popular areas of your store.",
+c_h:"Ready to give your control room an AI operator?",c_p:"Tell us about your setup and we'll show MAI Focus working on it."},
+he:{nav_how:"איך זה עובד",nav_feat:"יכולות",nav_uc:"שימושים",nav_contact:"צור קשר",cta_demo:"בקשו הדגמה",cta_app:"לאפליקציה",
+pill:"מפעיל AI · פעיל 24/7",h1:"רואים מה חשוב,<br><em>ברגע שזה חשוב.</em>",
+lead:"MAI Focus מוסיף מפעיל AI לחדר הבקרה הקיים שלכם. הוא צופה בכל מצלמה והתראה, מסנן את הרעש ומביא אליכם רק את מה שדורש תשומת לב. בלי חומרה חדשה.",
+how_eye:"איך זה עובד",how_h:"מבול של התראות הופך לתמונה אחת ברורה",how_sub:"לילה בחדר הבקרה, עם MAI לצד המפעיל.",
+s1_chip:"● התראה",s1_h:"התראה קופצת על המסך. MAI מגיב מיד.",s1_p:"ברגע שמשהו קורה, MAI מזהה, פונה אליו ומתחיל לעבוד. אין צורך לחפש את האירוע בין עשרות מצלמות.",
+s2_chip:"● מנתח",s2_h:"הוא בודק כל מצלמה ומסנן את הרעש.",s2_p:"MAI עובר ממסך למסך, מאמת כל התראה ומעלים את השגויות. רק אירועים אמיתיים נשארים מודגשים.",
+s3_chip:"● פועל",s3_h:"הוא עובד בתוך התוכנות שכבר יש לכם.",s3_p:"MAI פותח את חלון ניהול המצלמות, בוחר את המצלמה הנכונה, מצלם מסך ומדווח למפעיל, בדיוק כמו איש צוות מיומן.",
+s4_chip:"● תובנה",s4_h:"ואז הוא מסביר מה מצא.",s4_p:"דפוסים, שיאים וחריגות מסוכמים בדשבורד חי, כך שהמשמרת של מחר מתחילה חכמה יותר מזו של היום.",
+st1:"תמיד צופה",st2:"יצרן מצלמות",st3:"חומרה חדשה",st4:"תצוגה מאוחדת",
+f_eye:"יכולות מרכזיות",f_h:"כל מה שהמפעיל צריך, בעוזר אחד",
+f1_h:"חיבור למצלמות",f1_p:"מתחבר למצלמות מכל יצרן ומנהל את כל הזרמים במקום אחד.",
+f2_h:"זיהוי חריגות מתקדם",f2_p:"קביעת קריטריוני זיהוי לכל מצלמה ותזמון ניתוח לתרחישים שונים.",
+f3_h:"התראות מיידיות",f3_p:"התראות ב-SMS, אימייל או אפליקציות צד שלישי, ברגע שמשהו חשוב.",
+f4_h:"ממשק אינטואיטיבי",f4_p:"דשבורד נקי עם התראות וצ'אטבוט שאפשר פשוט לשאול.",
+f5_h:"ניתוח נתונים בזמן אמת",f5_p:"שומר ומנתח נתונים מוקלטים בזמן אמת וגם אחרי האירוע.",
+f6_h:"מפעיל על המסך שלכם",f6_p:"רובוט קטן שיושב מעל החלונות, מאזין להתראות ומבצע את פעולות ההמשך שלימדתם אותו.",
+u_eye:"שימושים",u_h:"נבנה למקומות שבהם תשומת לב יקרה",
+u1_h:"ניטור אבטחה מתקדם",u1_p:"זיהוי נשק, אנשים עם מסכות, סוגי רכבים וקבוצות.",
+u2_h:"ניהול בטיחות כולל",u2_p:"זיהוי אש, עמידה בחובת קסדה והתראות על כניסה לאזור אסור.",
+u3_h:"ניהול עסקי יעיל",u3_p:"ספירת אנשים בחנות, סטטיסטיקת כניסות למסעדה, מעקב מלאי ופעילות עובדים.",
+u4_h:"אנליטיקה מעמיקה",u4_p:"תנועת קהל, שימוש במכונות והאזורים הפופולריים בחנות.",
+c_h:"מוכנים לתת לחדר הבקרה שלכם מפעיל AI?",c_p:"ספרו לנו על המערכת שלכם ונראה את MAI Focus עובד עליה."}
+};
+let cur='en';
+function setLang(l){cur=l;const d=T[l];
+ document.documentElement.lang=l;document.documentElement.dir=l==='he'?'rtl':'ltr';
+ document.querySelectorAll('[data-i18n]').forEach(e=>{if(d[e.dataset.i18n]!==undefined)e.textContent=d[e.dataset.i18n]});
+ document.querySelectorAll('[data-i18n-html]').forEach(e=>{e.innerHTML=d[e.dataset.i18nHtml]});
+ document.getElementById('lang').textContent=l==='he'?'English':'עברית';
+ try{localStorage.setItem('lang',l)}catch(e){}}
+document.getElementById('lang').onclick=()=>setLang(cur==='en'?'he':'en');
+let saved=null;try{saved=localStorage.getItem('lang')}catch(e){}
+if(saved==='he'||(!saved&&(navigator.language||'').startsWith('he')))setLang('he');
+document.getElementById('yr').textContent=new Date().getFullYear();
+
+// reveal + lazy play videos only when visible
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in')}}),{threshold:.15});
+document.querySelectorAll('.rv').forEach(e=>io.observe(e));
+const vio=new IntersectionObserver(es=>es.forEach(e=>{const v=e.target;
+ if(e.isIntersecting){if(!v.src&&v.dataset.lazy)v.src=v.dataset.lazy;v.play().catch(()=>{})}else v.pause()}),{threshold:.35});
+document.querySelectorAll('.frame video').forEach(v=>vio.observe(v));
+
+// card glow follows cursor
+document.querySelectorAll('.card').forEach(c=>c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect();
+ c.style.setProperty('--mx',(e.clientX-r.left)/r.width*100+'%');c.style.setProperty('--my',(e.clientY-r.top)/r.height*100+'%')}));
+</script>
+</body>
+</html>
